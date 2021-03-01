@@ -4,6 +4,7 @@
 #include<cstdlib> 
 #include<vector>
 #include<fstream>
+#include<ctime> 
 using namespace std;
 
 
@@ -12,6 +13,7 @@ typedef struct collegeType{
 	int gNo; 
 	
 } cT;
+clock_t CountT;
 
 
 class college{
@@ -27,14 +29,16 @@ class college{
 
 	bool openFile(){
 		cout << endl << "Input 601, 602, ...[0]Quit):" ;
-		string filename ;
-		cin >> filename ;
+		string filename = "" ;
 		
+		cin >> filename ;
 		if(filename.compare("0") == 0)
 		{
+			
 			return false;
 		
-		}
+		} // if
+	
 		
 		fileNameNum = filename;
 		
@@ -44,7 +48,10 @@ class college{
 		
 		toRead.open(filename.c_str(), ifstream::in);
 		
+		
+		
 		if(!toRead.is_open()){
+		
 			cout << endl << "###" << filename <<" does not exist! ###" ;
 			return openFile();
 			
@@ -101,7 +108,24 @@ class college{
 
 	} // SaveFile
 	
-	
+	SaveFile(string title){
+    	string filename;
+      	filename = title;
+
+    	filename.operator+=(fileNameNum + ".txt" );
+    	toWrite.open(filename.c_str());
+    	
+    	
+    	
+    	for( int y = 0 ; y < aList.size() ; y++ ){
+    		toWrite << aList[y].fullName;
+		} // for
+    	
+
+    	
+    	toWrite.close();
+
+	} // SaveFile
 	
 	
 	InsertSort(){
@@ -115,17 +139,95 @@ class college{
 					y--;
 				} // if 
 			} // for
-			if(y%5000 == 0)
-			cout<<y<<endl;
+			
 		} // for
 		
-		cout <<endl <<aList.size();
 	
 	
 	} // InsertSort
+	
+	
+	MergeSort(){
+		
+			
+		toMergeSort(0,aList.size()-1);
+		
+	}  // MergeSort
 
 	
 	private:
+	
+	void toMergeSort(int begin, int end ){
+		int interval = end-begin;
+		int linterval = 0,rinterval = 0 ;
+		
+		if(begin == end ){
+			
+			return;
+		} // if
+			
+		
+		else if( interval%2 ==0 ){
+			
+			
+			linterval = interval/2;
+			rinterval = interval/2-1;
+			
+			toMergeSort(begin, begin+linterval);
+			toMergeSort(end-rinterval, end);
+			
+			for(int y = begin; y <= begin+linterval; y++ ){
+				
+				for( int x = end-rinterval ;x<=end; x++){
+					
+					if(aList[y].gNo>aList[x].gNo){
+						aList.insert(aList.begin()+y, aList[x]);
+						aList.erase(aList.begin()+x+1);
+						x--;
+						rinterval--;
+						linterval++;
+					} // if 
+					
+					
+				} // for
+				
+				
+			} // for
+			
+		} // if
+		
+		
+		else{
+			linterval = interval/2;
+			rinterval = interval/2;
+			
+			
+			toMergeSort(begin,  begin+linterval);
+			toMergeSort(end-rinterval, end);
+			
+			for(int y = begin; y <= begin+linterval; y++ ){
+				
+				for( int x = end-rinterval ;x<=end; x++){
+					
+						
+					if(aList[y].gNo>aList[x].gNo){
+						aList.insert(aList.begin()+y,aList[x]);
+						aList.erase(aList.begin()+x+1);
+						
+						
+						x--;
+						rinterval--;
+						linterval++;
+					} // if 
+					
+					
+				} // for
+		
+			} // for
+		} //else
+
+	} //MergeSort
+		
 	void ReadLine(cT &collegeData){
 		
 		int counter = 0;
@@ -159,7 +261,6 @@ class college{
 			token.operator+=(ch);
 		} // while
 		
-		
 
 		
 	} // getToken
@@ -173,6 +274,13 @@ class college{
 		} // for
 	} // Skip
 	
+	PrintAll(){
+		for(int y = 0;y < aList.size();y++)
+			cout << aList[y].fullName;		
+	}	 // PrintAll
+	Print(int i){
+		cout << aList[i].fullName;	
+	} // Print
 	
 	void Swap(cT& C1 ,cT &C2 ){
 		cT temp;
@@ -196,29 +304,42 @@ int main(void){
 		cout<<endl<<"*2.Merge Sort                *";
 		cout<<endl<<"******************************"<<endl;
 		cin >> command;
+		
 	
 		switch(command){
+			
 			case 0: break;
 			
 			case 1: if(thisFile.openFile()) {
+				CountT = clock();
 				thisFile.InsertSort();
-				thisFile.SaveFile();
+				CountT  = clock()-CountT;
+				thisFile.SaveFile("Inseret");
 				thisFile.aList.clear();
+				cout << "InsertSort cost  " <<(float)CountT * 1000 / CLOCKS_PER_SEC <<"  ms"<<endl;
+			} // if case 1
 				break;
-			} // case 1
-			
 			case 2:if(thisFile.openFile()){
-				thisFile.SaveFile();
+				CountT = clock();
+				thisFile.MergeSort();
+				CountT  = clock()-CountT;
+				
+				
+				cout << "MergeSort cost  " <<(float)CountT * 1000 / CLOCKS_PER_SEC <<"  ms"<<endl;
+				thisFile.SaveFile("Merge");
 				thisFile.aList.clear();
+				
+			} // if case 2
 				break;
-			} // case 2
 			
+			
+			default: cout << endl << "Command does not exist!" << endl;
 		}	// switch
 		
 		
 		
 		
-	} while(command!=0);
+	} while(command!=0); // while
 	
 	
 	
